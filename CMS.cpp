@@ -71,20 +71,18 @@ void CMS::add(int dataStreamIndx, int* dataStream, int dataStreamLen) {
 
 	std::cout << "Adding vectors to Count Min Sketch" << std::endl;
 
-#ifdef TIMER
-	auto begin = std::chrono::system_clock::now();
-#endif
-
 	unsigned int* hashIndices = new unsigned int[_numHashes * dataStreamLen];
 	getHashes(dataStream, dataStreamLen, hashIndices);
 
 	for (int dataIndx = 0; dataIndx < dataStreamLen; dataIndx++) {
 
+#ifdef DEBUG
 		printf("Hashes for entry %d:\n", dataIndx);
 		for (int h = 0; h < _numHashes; h++) {
 			printf("\t%d", hashIndices[hashLocation(dataIndx, _numHashes, h)]);
 		}
 		printf("\n");
+#endif
 
 		for (int hashIndx = 0; hashIndx < _numHashes; hashIndx++) {
 			if (dataStream[dataIndx] == TABLENULL) {
@@ -107,16 +105,13 @@ void CMS::add(int dataStreamIndx, int* dataStream, int dataStreamLen) {
 		}
 	}
 
-	std::cout << "Vectors Added" << std::endl;
-
-#ifdef TIMER
-	auto end = std::chrono::system_clock::now();
-	auto runTime = (end - begin);
-	std::cout << "Runtime: " << runTime.count() << std::endl;
-#endif
+	std::cout << "\tCompleted: Vectors Added" << std::endl;
 }
 
 void CMS::topK(int K, int threshold, int* topK, int sketchIndx) {
+
+	std::cout << "Calculating Top K" << std::endl;
+
 	LHH* candidates = new LHH[_bucketSize];
 	int count = 0;
 	for (int b = 0; b < _bucketSize; b++) {
@@ -146,16 +141,39 @@ void CMS::topK(int K, int threshold, int* topK, int sketchIndx) {
 	}
 	std::sort(candidates, candidates + _bucketSize, [&candidates](LHH a, LHH b){return a.count > b.count;});
 
+#ifdef DEBUG
 	printf("Sorted Candidate Set:\n");
 	for (int k = 0; k < _bucketSize; k++) {
 		printf("\t%d", candidates[k].heavyHitter);
 	}
 	printf("\n");
+#endif
 
 	for (int i = 0; i < K; i++) {
 		topK[i] = candidates[i].heavyHitter;
 	}
 	delete[] candidates;
+
+	std::cout << "\tCompleted: Top K Selected" << std::endl;
+}
+
+void CMS::combineSketches (int* newLHH) {
+
+	std::cout << "Combining Sketches" << std::endl;
+
+	for (int n = 0; n < _numHashes * _bucketSize * _numSketches; n++) {
+		if (newLHH[n * 2] == _LHH[n * 2]) {
+			_LHH[n * 2 + 1] += newLHH[n * 2 + 1];
+		} else {
+			_LHH[n * 2 + 1] -= newLHH[n * 2 + 1];
+		}
+		if (_LHH[n * 2 + 1] <= 0) {
+			_LHH[n * 2] = newLHH[n * 2];
+			_LHH[n * 2 + 1] = - _LHH[n * 2 + 1];
+		}
+	}
+
+	std::cout << "\tCompleted: Sketches Combined" << std::endl;
 }
 
 

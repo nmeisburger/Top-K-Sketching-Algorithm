@@ -25,6 +25,14 @@ int main() {
 	}
 	printf("\n");
 
+	cms->showCMS(0);
+
+	int newLHH[40] = {3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6};
+
+	cms->combineSketches(newLHH);
+
+	cms->showCMS(0);
+
 	delete cms;
 
 	return 0;

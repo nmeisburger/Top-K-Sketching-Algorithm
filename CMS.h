@@ -6,7 +6,6 @@
 #include <iostream>
 #include <math.h>
 #include <random>
-#include <chrono>
 #include <algorithm>
 
 #define INT_MAX 0xffffffff
@@ -32,13 +31,34 @@ private:
 	void getHashes(int* data, int dataSize, unsigned int* hashIndices);
 
 public:
+
+	/*
+	@param L: The number of hashes per sketch
+	@param B: The size of each bucket per hash function per sketch
+	@param S: The number of sketches to initialize
+	*/
 	CMS(int L, int B, int S);
 
+	/*
+	@param dataStreamIndx: The index of the data stream (the nth data stream will be added to the nth sketch)
+	@param dataStream: The data to be added to the sketch
+	@param dataStreamLen: The length of the data to be added
+	*/
 	void add(int dataStreamIndx, int* dataStream, int dataStreamLen);
 
+	/*
+	@param K: The number of top elements to return
+	@param threshold: The minimum count that a local heavy hitter must have to be added to the top K candidate set
+	@param sketchIndx: The index of the sketch to find the top K from
+	*/
 	void topK(int K, int threshold, int* topK, int sketchIndx);
 
-	void showCMS(int dataStreamIndx);
+	void combineSketches(int* newLHH);
+
+	/*
+	@param sketchIndx: The index of the sketch to print the local heavy hitters and their counts from
+	*/
+	void showCMS(int sketchIndx);
 
 	~CMS();
 };
